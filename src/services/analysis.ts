@@ -44,13 +44,15 @@ export async function createAnalysisRecord(input: {
 }): Promise<string> {
   const { data, error } = await supabase
     .from("analyses")
-    .insert({
-      user_id: input.userId,
-      photos: input.photos,
-      purchase_price: input.purchasePrice,
-      ai_result: input.result as unknown as Record<string, unknown>,
-      status: "completed",
-    })
+    .insert([
+      {
+        user_id: input.userId,
+        photos: input.photos,
+        purchase_price: input.purchasePrice,
+        ai_result: input.result as unknown as never,
+        status: "completed",
+      },
+    ])
     .select("id")
     .single();
   if (error) throw error;
@@ -60,7 +62,7 @@ export async function createAnalysisRecord(input: {
 export async function updateAnalysisListing(id: string, listing: VintedListing): Promise<void> {
   const { error } = await supabase
     .from("analyses")
-    .update({ vinted_listing: listing as unknown as Record<string, unknown> })
+    .update({ vinted_listing: listing as unknown as never })
     .eq("id", id);
   if (error) throw error;
 }
