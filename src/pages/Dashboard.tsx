@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus, ImageOff, Trash2 } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,43 +10,45 @@ import { deleteAnalysis, fetchUserAnalyses } from "@/services/analysis";
 import type { AnalysisRow } from "@/types/analysis";
 
 const Dashboard = () => {
-  const [analyses, setAnalyses] = useState<AnalysisRow[] | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    fetchUserAnalyses()
-      .then(setAnalyses)
-      .catch((err) =>
-        toast({
-          title: "Errore caricamento",
-          description: err instanceof Error ? err.message : "Errore sconosciuto",
-          variant: "destructive",
-        }),
+  const { data: analyses, isLoading } = useQuery({
+    queryKey: ["analyses"],
+    queryFn: fetchUserAnalyses,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteAnalysis,
+    onSuccess: (_, id) => {
+      queryClient.setQueryData<AnalysisRow[]>(["analyses"], (old) => 
+        old ? old.filter((a) => a.id !== id) : []
       );
-  }, [toast]);
-
-  const handleDelete = async (id: string) => {
-    try {
-      await deleteAnalysis(id);
-      setAnalyses((prev) => prev?.filter((a) => a.id !== id) ?? null);
       toast({ title: "Eliminata", description: "Analisi rimossa." });
-    } catch (err) {
+    },
+    onError: (err) => {
       toast({
         title: "Errore",
         description: err instanceof Error ? err.message : "Errore",
         variant: "destructive",
       });
-    }
+    },
+  });
+
+  const handleDelete = (id: string) => {
+    deleteMutation.mutate(id);
   };
+
+
 
   return (
     <div className="min-h-screen bg-background">
       <AppHeader />
 
-      <main className="container py-10">
+      <main className="container py-10 pt-32">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="font-display text-3xl font-bold md:text-4xl">Le tue analisi</h1>
+            <h1 className="font-display text-4xl font-black uppercase md:text-5xl tracking-tighter">Le tue analisi</h1>
             <p className="mt-1 text-muted-foreground">Tutto quello che hai stimato e pubblicato.</p>
           </div>
           <Button asChild className="rounded-full shadow-pop">
@@ -57,13 +60,13 @@ const Dashboard = () => {
         </div>
 
         <div className="mt-8">
-          {analyses === null ? (
+          {isLoading ? (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {[1, 2, 3].map((i) => (
                 <Skeleton key={i} className="h-64 rounded-3xl" />
               ))}
             </div>
-          ) : analyses.length === 0 ? (
+          ) : !analyses || analyses.length === 0 ? (
             <EmptyState />
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -81,10 +84,16 @@ const Dashboard = () => {
 const AnalysisCard = ({ analysis, onDelete }: { analysis: AnalysisRow; onDelete: () => void }) => {
   const ai = analysis.ai_result;
   const photo = analysis.photos[0];
+  const isSold = analysis.status === "sold";
+  const profit = ai?.profit;
+  const soldPrice = profit?.soldPrice ?? 0;
+  const actualProfit = profit?.actualProfit ?? 0;
+  const isPositive = actualProfit >= 0;
+
   return (
-    <div className="card-soft group flex flex-col overflow-hidden p-0">
+    <div className={`card-soft group flex flex-col overflow-hidden p-0 border-2 border-black hover:-translate-y-2 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all ${isSold ? "bg-[#4ade80]/10" : ""}`}>
       <Link to={`/analysis/${analysis.id}`} className="block">
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted border-b-2 border-black">
           {photo ? (
             <img
               src={photo}
@@ -97,9 +106,14 @@ const AnalysisCard = ({ analysis, onDelete }: { analysis: AnalysisRow; onDelete:
               <ImageOff className="h-8 w-8" />
             </div>
           )}
-          {ai && (
-            <span className="pill absolute left-3 top-3 bg-background/90 text-foreground backdrop-blur">
+          {ai && !isSold && (
+            <span className="pill absolute left-3 top-3 bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
               {ai.identification.category}
+            </span>
+          )}
+          {isSold && (
+            <span className="pill absolute left-3 top-3 bg-[#4ade80] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
+              Venduto
             </span>
           )}
         </div>
@@ -113,16 +127,29 @@ const AnalysisCard = ({ analysis, onDelete }: { analysis: AnalysisRow; onDelete:
             {ai?.identification.brand || ai?.identification.artist || ai?.identification.era}
           </p>
         </Link>
-        <div className="mt-auto flex items-center justify-between pt-4">
+        <div className="mt-auto flex items-center justify-between pt-4 border-t-2 border-black/5 mt-4">
           <div>
-            {ai && (
-              <p className="font-display text-xl font-bold text-primary">
-                € {ai.currentEstimate.min}–{ai.currentEstimate.max}
-              </p>
+            {isSold ? (
+              <>
+                <p className="font-display text-2xl font-black text-black tracking-tight">
+                  € {soldPrice}
+                </p>
+                <p className={`text-sm font-bold uppercase ${isPositive ? "text-green-600" : "text-red-600"}`}>
+                  {isPositive ? "+" : ""}€ {actualProfit.toFixed(2)}
+                </p>
+              </>
+            ) : (
+              <>
+                {ai && (
+                  <p className="font-display text-2xl font-black text-black tracking-tight">
+                    € {ai.currentEstimate.min}–{ai.currentEstimate.max}
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground mt-1">
+                  {new Date(analysis.created_at).toLocaleDateString("it-IT")}
+                </p>
+              </>
             )}
-            <p className="text-xs text-muted-foreground">
-              {new Date(analysis.created_at).toLocaleDateString("it-IT")}
-            </p>
           </div>
           <Button variant="ghost" size="icon" onClick={onDelete} aria-label="Elimina">
             <Trash2 className="h-4 w-4" />

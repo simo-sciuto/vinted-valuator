@@ -15,6 +15,10 @@ const ANALYZE_TOOL = {
     parameters: {
       type: "object",
       properties: {
+        visualAnalysis: {
+          type: "string",
+          description: "STEP 1: Descrivi minuziosamente cosa vedi nelle foto. Leggi ogni singola etichetta, logo, scritta o dettaglio del design PRIMA di identificare l'oggetto. Usa questo campo per ragionare ad alta voce.",
+        },
         identification: {
           type: "object",
           properties: {
@@ -35,15 +39,45 @@ const ANALYZE_TOOL = {
               type: "string",
               enum: ["nuovo con etichetta", "ottimo", "buono", "discreto", "da sistemare"],
             },
+            materials: {
+              type: "array",
+              items: { type: "string" },
+              description: "Lista dei materiali riconosciuti o probabili (es. 'pelle', 'cotone', 'plastica', 'legno').",
+            },
+            style: {
+              type: "string",
+              description: "Stile o estetica dell'oggetto (es. 'Y2K', 'Streetwear', 'Mid-Century Modern', 'Boho').",
+            },
             confidence: { type: "number", minimum: 0, maximum: 1, description: "Quanto sei sicuro dell'identificazione" },
           },
-          required: ["name", "category", "brand", "artist", "era", "estimatedAge", "condition", "confidence"],
+          required: ["name", "category", "brand", "artist", "era", "estimatedAge", "condition", "materials", "style", "confidence"],
           additionalProperties: false,
         },
-        story: {
-          type: "string",
-          description:
-            "Racconto coinvolgente di 3-5 frasi sulla storia del brand, dell'artista o del contesto culturale dell'oggetto. Tono caldo, da intenditore.",
+        marketAnalysis: {
+          type: "object",
+          description: "Analisi di mercato e consigli pratici per la rivendita.",
+          properties: {
+            rareFactors: { type: "string", description: "Perché questo oggetto è ricercato o raro? Quali dettagli (colorway, anno) ne alzano il valore? Spiega bene." },
+            targetAudience: { type: "string", description: "Chi è l'acquirente ideale per questo oggetto? Profilo dettagliato (es. 'Collezionisti di sneaker anni 90', 'Appassionati di design scandinavo')." },
+            similarSoldPrice: { type: "string", description: "Prezzo storico o di riferimento a cui oggetti simili sono stati venduti (es. 'Venduto a 80€ su eBay US a Gennaio 2024')." },
+            authenticityClues: { type: "string", description: "Dettagli chiave (legit check) per capire se questo specifico pezzo è originale (es. font dell'etichetta, tipo di zip YKK, cuciture)." },
+            restorationTips: { type: "string", description: "Consigli dell'esperto su come pulire, smacchiare o presentare al meglio l'oggetto prima di fare le foto per Vinted." },
+            stylingAdvice: { type: "string", description: "Come consiglieresti di abbinarlo o descriverlo nel titolo/testo di Vinted per attirare click (es. 'Perfetto per look Gorpcore / Y2K')." },
+          },
+          required: ["rareFactors", "targetAudience", "similarSoldPrice", "authenticityClues", "restorationTips", "stylingAdvice"],
+          additionalProperties: false,
+        },
+        historicalContext: {
+          type: "object",
+          description: "Un'analisi storico-culturale molto approfondita e raffinata dell'oggetto. Le risposte devono essere paragrafi lunghi, descrittivi e affascinanti (minimo 150-200 parole per sezione).",
+          properties: {
+            brandHistory: { type: "string", description: "Una cronistoria ricca, esaustiva e dettagliata del brand o dell'artista. Menziona anni chiave, fondatori, evoluzione aziendale, aneddoti memorabili e la filosofia dietro la creazione. Scrivi molto." },
+            culturalSignificance: { type: "string", description: "Il peso culturale di questo oggetto. Spiega in modo esteso come si inserisce nella storia della moda, del design o dell'arte, descrivi i movimenti sociali associati, icone di stile che l'hanno indossato e l'impatto duraturo." },
+            manufacturingDetails: { type: "string", description: "Dettagli tecnici estremamente approfonditi sulla manifattura (es. tipologia di telaio, metodi di concia, tecniche di cucitura, origini dei materiali). Spiega in modo dettagliato perché l'ingegneria o l'artigianato dietro questo pezzo è superiore." },
+            funFact: { type: "string", description: "Un aneddoto lungo, una controversia, un gossip storico, un retroscena di produzione o una curiosità pazzesca legata a questo specifico modello che un vero esperto del settore racconterebbe." },
+          },
+          required: ["brandHistory", "culturalSignificance", "manufacturingDetails", "funFact"],
+          additionalProperties: false,
         },
         currentEstimate: {
           type: "object",
@@ -71,7 +105,7 @@ const ANALYZE_TOOL = {
           additionalProperties: false,
         },
       },
-      required: ["identification", "story", "currentEstimate", "futureEstimate"],
+      required: ["visualAnalysis", "identification", "marketAnalysis", "historicalContext", "currentEstimate", "futureEstimate"],
       additionalProperties: false,
     },
   },
@@ -107,10 +141,13 @@ serve(async (req) => {
       {
         type: "text",
         text:
-          "Analizza queste foto come un esperto di rivendita su Vinted e mercato dell'usato/vintage europeo. " +
-          "Identifica con precisione l'oggetto, racconta la storia del brand o dell'artista se rilevante, " +
-          "e fornisci stime di prezzo realistiche per il mercato europeo basate sulla tua conoscenza di " +
-          "Vinted, eBay, Discogs, Catawiki e simili. Sii onesto sulla confidenza. Tutto in italiano.",
+          "Sei un perito di livello mondiale, storico del design e massimo esperto di mercato secondario (Vinted/Grailed). " +
+          "ATTENZIONE: La precisione è vitale. Usa il campo 'visualAnalysis' per studiare attentamente le foto prima di azzardare un brand o un nome. " +
+          "Leggi le etichette, scruta i loghi e confrontali mentalmente con il tuo database. Se non sei sicuro del brand, lascialo vuoto piuttosto che inventare. " +
+          "La tua analisi deve essere un testo RICCO, VERBOSO e COLTO. Voglio paragrafi lunghi ed esaustivi, non singole frasi. " +
+          "Analizza i materiali, spiega esattamente come capire se è originale (legit check), dai trucchi di restauro/lavaggio. " +
+          "Sii precisissimo sui prezzi basandoti sullo storico di mercato europeo. " +
+          "Rispondi in italiano con un tono sofisticato.",
       },
       ...body.photoUrls.map((url) => ({ type: "image_url", image_url: { url } })),
     ];
@@ -122,7 +159,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
+        model: "gpt-4o",
         messages: [
           {
             role: "system",

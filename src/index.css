@@ -9,54 +9,55 @@
 
 @layer base {
   :root {
-    --background: 48 33% 97%;
-    --foreground: 0 0% 10%;
+    --background: 45 100% 96%; /* Light cream/yellowish for body */
+    --foreground: 0 0% 0%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 10%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 10%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 184 90% 38%;
+    --primary: 0 0% 0%; /* Pure black for primary */
     --primary-foreground: 0 0% 100%;
-    --primary-soft: 184 70% 92%;
+    --primary-soft: 0 0% 90%;
 
-    --accent: 47 100% 62%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 53 98% 66%; /* Bright Wero Yellow */
+    --accent-foreground: 0 0% 0%;
 
-    --pop: 0 100% 71%;
-    --pop-foreground: 0 0% 100%;
+    --pop: 354 78% 75%; /* Warm Pink / Coral */
+    --pop-foreground: 0 0% 0%;
 
-    --secondary: 184 30% 95%;
-    --secondary-foreground: 184 80% 22%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 40 20% 94%;
-    --muted-foreground: 0 0% 38%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 0 0% 25%;
 
-    --destructive: 0 75% 55%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 40 15% 88%;
-    --input: 40 15% 88%;
-    --ring: 184 90% 38%;
+    --border: 0 0% 0%; /* Hard black borders */
+    --input: 0 0% 0%;
+    --ring: 0 0% 0%;
 
-    --radius: 1.25rem;
+    --radius: 20px;
 
-    --shadow-soft: 0 8px 24px -12px hsl(184 60% 30% / 0.18);
-    --shadow-pop: 0 12px 32px -10px hsl(184 90% 38% / 0.35);
+    /* Neo-brutalist hard shadows */
+    --shadow-soft: 4px 4px 0px 0px rgba(0,0,0,1);
+    --shadow-pop: 6px 6px 0px 0px rgba(0,0,0,1);
 
-    --gradient-hero: linear-gradient(135deg, hsl(184 90% 38%) 0%, hsl(184 80% 50%) 100%);
-    --gradient-sun: linear-gradient(135deg, hsl(47 100% 62%) 0%, hsl(28 100% 64%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(354 78% 75%) 0%, hsl(53 98% 66%) 100%);
+    --gradient-sun: linear-gradient(135deg, hsl(53 98% 66%) 0%, hsl(35 100% 64%) 100%);
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 26%;
-    --sidebar-primary: 184 90% 38%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 40 20% 94%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 40 15% 88%;
-    --sidebar-ring: 184 90% 38%;
+    --sidebar-accent: 53 98% 66%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 0 0% 0%;
+    --sidebar-ring: 0 0% 0%;
   }
 
   .dark {
@@ -103,15 +104,20 @@
   h3,
   h4 {
     font-family: "Space Grotesk", system-ui, sans-serif;
-    @apply tracking-tight;
+    font-weight: 900;
+    text-transform: uppercase;
+    @apply tracking-tighter;
   }
 }
 
 @layer components {
   .pill {
-    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+    @apply inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider border-2 border-border;
   }
   .card-soft {
-    @apply rounded-3xl border border-border bg-card p-6 shadow-[var(--shadow-soft)];
+    @apply rounded-[24px] border-2 border-border bg-card p-6 shadow-[var(--shadow-soft)] transition-all;
+  }
+  .btn-neo {
+    @apply border-2 border-black shadow-[var(--shadow-pop)] font-bold uppercase tracking-wide hover:-translate-y-1 hover:shadow-[6px_8px_0px_0px_rgba(0,0,0,1)] active:translate-y-1 active:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] transition-all;
   }
 }

@@ -23,7 +23,7 @@ export async function callAnalyzeItem(photoUrls: string[], purchasePrice: number
     body: { photoUrls, purchasePrice },
   });
   if (error) throw new Error(error.message);
-  if (!data?.result) throw new Error("Risposta AI non valida");
+  if (!data?.result) throw new Error("Risposta del server non valida");
   return data.result as AnalysisResult;
 }
 
@@ -84,5 +84,32 @@ export async function fetchAnalysisById(id: string): Promise<AnalysisRow | null>
 
 export async function deleteAnalysis(id: string): Promise<void> {
   const { error } = await supabase.from("analyses").delete().eq("id", id);
+  if (error) throw error;
+}
+
+export async function markAsSold(id: string, aiResult: AnalysisResult, purchasePrice: number | null, soldPrice: number): Promise<void> {
+  const updatedAiResult = { ...aiResult };
+  
+  if (!updatedAiResult.profit) {
+    updatedAiResult.profit = {
+      purchasePrice: purchasePrice ?? 0,
+      currentProfit: 0,
+      currentProfitPercent: null,
+      futureProfitYear5: 0,
+    };
+  }
+  
+  updatedAiResult.profit.soldPrice = soldPrice;
+  const cost = purchasePrice ?? 0;
+  updatedAiResult.profit.actualProfit = soldPrice - cost;
+
+  const { error } = await supabase
+    .from("analyses")
+    .update({ 
+      status: "sold",
+      ai_result: updatedAiResult as unknown as never 
+    })
+    .eq("id", id);
+    
   if (error) throw error;
 }

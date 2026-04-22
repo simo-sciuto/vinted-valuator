@@ -9,6 +9,7 @@ import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import NewAnalysis from "./pages/NewAnalysis";
 import AnalysisResult from "./pages/AnalysisResult";
+import Sales from "./pages/Sales";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <NewAnalysis />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/sales"
+            element={
+              <ProtectedRoute>
+                <Sales />
               </ProtectedRoute>
             }
           />

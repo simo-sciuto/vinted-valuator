@@ -9,6 +9,7 @@ export type ItemCategory =
   | "altro";
 
 export interface AnalysisResult {
+  visualAnalysis?: string;
   identification: {
     name: string;
     category: ItemCategory;
@@ -17,9 +18,24 @@ export interface AnalysisResult {
     era: string;
     estimatedAge: string;
     condition: string;
+    materials: string[];
+    style: string;
     confidence: number;
   };
-  story: string;
+  marketAnalysis: {
+    rareFactors: string;
+    targetAudience: string;
+    similarSoldPrice: string;
+    authenticityClues: string;
+    restorationTips: string;
+    stylingAdvice: string;
+  };
+  historicalContext: {
+    brandHistory: string;
+    culturalSignificance: string;
+    manufacturingDetails: string;
+    funFact: string;
+  };
   currentEstimate: {
     min: number;
     max: number;
@@ -37,6 +53,8 @@ export interface AnalysisResult {
     currentProfit: number;
     currentProfitPercent: number | null;
     futureProfitYear5: number;
+    soldPrice?: number;
+    actualProfit?: number;
   };
 }
 
