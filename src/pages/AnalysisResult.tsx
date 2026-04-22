@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import {
   Area,
@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Copy, Sparkles, TrendingUp, TrendingDown, Minus, Tag, Loader2, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Copy, Sparkles, TrendingUp, TrendingDown, Minus, Tag, Loader2, CheckCircle2, ExternalLink, Zap } from "lucide-react";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -21,8 +21,14 @@ import {
   updateAnalysisListing,
   markAsSold,
 } from "@/services/analysis";
-import type { AnalysisRow, VintedListing, AnalysisResult as AnalysisResultType } from "@/types/analysis";
-import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { AnalysisRow, MultiPlatformListing, AnalysisResult as AnalysisResultType } from "@/types/analysis";
+import { cn } from "@/lib/utils";
 
 const AnalysisResult = () => {
   const { id } = useParams<{ id: string }>();
@@ -133,33 +139,35 @@ const AnalysisResult = () => {
     <div className="min-h-screen bg-background">
       <AppHeader />
 
-      <main className="container max-w-5xl py-10 pt-32">
+      <main className="container max-w-5xl px-6 py-10 pt-24 md:pt-32 pb-32 md:pb-10">
         <Link to="/dashboard" className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider text-muted-foreground hover:text-black transition-colors">
           <ArrowLeft className="h-4 w-4" />
           Torna allo storico
         </Link>
 
         {/* Header */}
-        <div className="mt-4 grid gap-6 md:grid-cols-[1fr_360px]">
+        <div className="mt-6 grid gap-8 md:grid-cols-[1fr_360px]">
           <div>
-            <span className="pill bg-accent text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">{ai.identification.category}</span>
-            <h1 className="mt-6 font-display text-4xl font-black uppercase tracking-tighter md:text-5xl">{ai.identification.name}</h1>
-            <p className="mt-3 text-lg font-medium text-foreground/80">
+            <div className="flex flex-wrap gap-2">
+              <span className="pill bg-accent text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px]">{ai.identification.category}</span>
+              {row.status === "sold" && (
+                <span className="pill bg-[#4ade80] text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px]">Venduto</span>
+              )}
+            </div>
+            <h1 className="mt-4 font-display text-3xl sm:text-4xl font-black uppercase tracking-tighter md:text-5xl leading-none">{ai.identification.name}</h1>
+            <p className="mt-2 text-base md:text-lg font-medium text-foreground/80">
               {[ai.identification.brand, ai.identification.artist, ai.identification.era]
                 .filter(Boolean)
                 .join(" · ")}
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <span className="pill bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Età: {ai.identification.estimatedAge}</span>
-              <span className="pill bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Condizione: {ai.identification.condition}</span>
+            <div className="mt-6 flex flex-wrap gap-2 md:gap-3">
+              <span className="pill bg-card text-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px] md:text-xs">Età: {ai.identification.estimatedAge}</span>
+              <span className="pill bg-card text-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px] md:text-xs">Condizione: {ai.identification.condition}</span>
               {ai.identification.style && (
-                <span className="pill bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Stile: {ai.identification.style}</span>
+                <span className="pill bg-card text-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px] md:text-xs">Stile: {ai.identification.style}</span>
               )}
-              {ai.identification.materials?.length > 0 && (
-                <span className="pill bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">Materiali: {ai.identification.materials.join(", ")}</span>
-              )}
-              <span className="pill bg-pop text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">
-                Precisione stima: {Math.round(ai.identification.confidence * 100)}%
+              <span className="pill bg-pop text-pop-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px] md:text-xs">
+                Precisione: {Math.round(ai.identification.confidence * 100)}%
               </span>
             </div>
           </div>
@@ -258,6 +266,11 @@ const AnalysisResult = () => {
           />
         </div>
 
+        {/* Flip Finder */}
+        <div className="mt-6">
+          <FlipFinderCard ai={ai} />
+        </div>
+
         {/* Profit */}
         {ai.profit && <ProfitChart ai={ai} />}
 
@@ -292,27 +305,62 @@ const AnalysisResult = () => {
 };
 
 const PhotoStrip = ({ photos }: { photos: string[] }) => (
-  <div className="grid grid-cols-2 gap-3">
+  <div className="grid grid-cols-4 md:grid-cols-2 gap-2 md:gap-3">
     {photos.slice(0, 4).map((p, i) => (
-      <div key={i} className="aspect-square overflow-hidden rounded-[24px] border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-        <img src={p} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" loading="lazy" />
-      </div>
+      <Dialog key={i}>
+        <DialogTrigger asChild>
+          <button className={cn(
+            "aspect-square overflow-hidden rounded-2xl border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] transition-all group",
+            i === 0 ? "col-span-4 md:col-span-2 aspect-[16/9] md:aspect-square" : "col-span-1"
+          )}>
+            <img src={p} alt={`Foto ${i + 1}`} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" />
+          </button>
+        </DialogTrigger>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] p-0 overflow-hidden border-4 border-black bg-black sm:rounded-[32px] flex items-center justify-center">
+          <img src={p} alt={`Foto ${i + 1} Full`} className="max-w-full max-h-[90vh] object-contain" />
+        </DialogContent>
+      </Dialog>
     ))}
   </div>
 );
 
-const CurrentEstimateCard = ({ ai }: { ai: NonNullable<AnalysisRow["ai_result"]> }) => (
-  <div className="card-soft bg-accent text-black">
-    <div className="flex items-center justify-between">
-      <h2 className="font-display text-2xl font-black uppercase">Stima oggi</h2>
-      <span className="pill bg-white text-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)]">EUR</span>
+const CurrentEstimateCard = ({ ai }: { ai: NonNullable<AnalysisRow["ai_result"]> }) => {
+  const searchQuery = encodeURIComponent(`${ai.identification.brand || ""} ${ai.identification.name}`);
+  const vintedUrl = `https://www.vinted.it/catalog?search_text=${searchQuery}`;
+  const ebayUrl = `https://www.ebay.it/sch/i.html?_nkw=${searchQuery}&LH_Sold=1&LH_Complete=1`;
+
+  return (
+    <div className="card-soft bg-accent text-accent-foreground border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-none">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-2xl font-black uppercase">Stima oggi</h2>
+        <span className="pill bg-card text-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-none text-xs font-bold">EUR</span>
+      </div>
+      <p className="mt-6 font-display text-5xl font-black tracking-tighter">
+        € {ai.currentEstimate.min} – {ai.currentEstimate.max}
+      </p>
+      <p className="mt-3 text-sm text-accent-foreground/70 leading-snug font-medium">{ai.currentEstimate.reasoning}</p>
+      
+      <div className="mt-6 grid grid-cols-2 gap-3">
+        <Button asChild variant="outline" size="sm" className="bg-card text-foreground border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all h-auto py-2.5 px-3 dark:shadow-none">
+          <a href={vintedUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 text-center">
+            <span className="text-[10px] uppercase font-bold opacity-50">Vinted</span>
+            <span className="flex items-center gap-1 text-xs font-black">
+              Simili <ExternalLink className="h-3 w-3" />
+            </span>
+          </a>
+        </Button>
+        <Button asChild variant="outline" size="sm" className="bg-card text-foreground border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all h-auto py-2.5 px-3 dark:shadow-none">
+          <a href={ebayUrl} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1 text-center">
+            <span className="text-[10px] uppercase font-bold opacity-50">eBay</span>
+            <span className="flex items-center gap-1 text-xs font-black">
+              Venduti <ExternalLink className="h-3 w-3" />
+            </span>
+          </a>
+        </Button>
+      </div>
     </div>
-    <p className="mt-6 font-display text-5xl font-black tracking-tighter">
-      € {ai.currentEstimate.min} – {ai.currentEstimate.max}
-    </p>
-    <p className="mt-3 text-sm text-muted-foreground">{ai.currentEstimate.reasoning}</p>
-  </div>
-);
+  );
+};
 
 const FutureEstimateCard = ({ ai }: { ai: NonNullable<AnalysisRow["ai_result"]> }) => {
   const cardBgClass = 
@@ -423,6 +471,7 @@ const ProfitChart = ({ ai }: { ai: NonNullable<AnalysisRow["ai_result"]> }) => {
                 background: "hsl(var(--card))",
                 border: "1px solid hsl(var(--border))",
                 borderRadius: 12,
+                color: "hsl(var(--foreground))",
               }}
               formatter={(value: number) => [`€ ${value}`, "Valore"]}
             />
@@ -440,39 +489,62 @@ const ProfitChart = ({ ai }: { ai: NonNullable<AnalysisRow["ai_result"]> }) => {
   );
 };
 
-const ListingCard = ({ listing }: { listing: VintedListing }) => {
+const ListingCard = ({ listing }: { listing: MultiPlatformListing }) => {
   const { toast } = useToast();
+  const [platform, setPlatform] = useState("vinted");
+
   const copy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast({ title: "Copiato", description: `${label} pronto da incollare.` });
   };
 
-  const fullText = `${listing.title}\n\n${listing.description}\n\n${listing.hashtags.map((h) => `#${h}`).join(" ")}`;
+  const getPlatformDescription = () => {
+    if (platform === "depop") return listing.depopDescription || listing.description;
+    if (platform === "ebay") return listing.ebayDescription || listing.description;
+    return listing.description;
+  };
+
+  const currentDesc = getPlatformDescription();
+  const fullText = `${listing.title}\n\n${currentDesc}\n\n${listing.hashtags.map((h) => `#${h}`).join(" ")}`;
 
   return (
     <div className="card-soft">
-      <div className="flex items-center justify-between">
-        <h2 className="font-display text-xl font-bold">Annuncio Vinted</h2>
-        <Button size="sm" variant="outline" className="rounded-full" onClick={() => copy(fullText, "Annuncio")}>
-          <Copy className="h-3.5 w-3.5" />
-          Copia tutto
-        </Button>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h2 className="font-display text-xl font-bold uppercase tracking-tight">Generatore Annunci</h2>
+        <Tabs value={platform} onValueChange={setPlatform} className="w-full sm:w-auto">
+          <TabsList className="grid w-full grid-cols-3 h-10 border-2 border-black bg-muted p-1">
+            <TabsTrigger value="vinted" className="data-[state=active]:bg-accent data-[state=active]:text-black font-bold text-xs uppercase">Vinted</TabsTrigger>
+            <TabsTrigger value="depop" className="data-[state=active]:bg-[#ff4800] data-[state=active]:text-white font-bold text-xs uppercase">Depop</TabsTrigger>
+            <TabsTrigger value="ebay" className="data-[state=active]:bg-[#0064d2] data-[state=active]:text-white font-bold text-xs uppercase">eBay</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      <div className="mt-6 space-y-5">
+      <div className="mt-8 space-y-6">
+        <div className="flex items-center justify-between">
+           <span className="pill bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[10px] uppercase font-bold">
+             Copywriting per {platform.toUpperCase()}
+           </span>
+           <Button size="sm" variant="outline" className="rounded-full border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-none transition-all" onClick={() => copy(fullText, "Annuncio completo")}>
+            <Copy className="h-3.5 w-3.5" />
+            Copia tutto
+          </Button>
+        </div>
+
         <Field label="Titolo" value={listing.title} onCopy={() => copy(listing.title, "Titolo")} />
+        
         <Field
-          label="Descrizione"
-          value={listing.description}
-          onCopy={() => copy(listing.description, "Descrizione")}
+          label={`Descrizione ${platform.charAt(0).toUpperCase() + platform.slice(1)}`}
+          value={currentDesc}
+          onCopy={() => copy(currentDesc, "Descrizione")}
           multiline
         />
 
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Hashtag</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Hashtag consigliati</p>
           <div className="mt-2 flex flex-wrap gap-1.5">
             {listing.hashtags.map((h) => (
-              <span key={h} className="pill bg-primary-soft text-secondary-foreground">
+              <span key={h} className="pill bg-white text-black border-2 border-black text-[11px] font-bold">
                 #{h}
               </span>
             ))}
@@ -480,19 +552,23 @@ const ListingCard = ({ listing }: { listing: VintedListing }) => {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-2xl bg-gradient-sun p-4">
-            <p className="text-xs font-semibold uppercase">Prezzo consigliato</p>
-            <p className="mt-1 font-display text-3xl font-bold">€ {listing.suggestedPrice}</p>
+          <div className="rounded-2xl bg-accent p-4 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <p className="text-xs font-semibold uppercase text-black/60">Prezzo consigliato</p>
+            <p className="mt-1 font-display text-3xl font-black">€ {listing.suggestedPrice}</p>
           </div>
-          <div className="rounded-2xl bg-muted p-4">
-            <p className="text-xs font-semibold uppercase text-muted-foreground">Categoria Vinted</p>
-            <p className="mt-1 font-medium">{listing.vintedCategory}</p>
+          <div className="rounded-2xl bg-muted p-4 border-2 border-black">
+            <p className="text-xs font-semibold uppercase text-muted-foreground">Categoria ottimale</p>
+            <p className="mt-1 font-bold">{listing.vintedCategory}</p>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-dashed border-border p-4">
-          <p className="text-xs font-semibold uppercase text-muted-foreground">💡 Tip vendita</p>
-          <p className="mt-1 text-sm">{listing.sellingTip}</p>
+        <div className="rounded-2xl border-2 border-dashed border-black/20 p-4 bg-muted/30">
+          <p className="text-xs font-semibold uppercase text-muted-foreground">💡 Pro-Tip per questa piattaforma</p>
+          <p className="mt-1 text-sm italic">
+            {platform === 'depop' ? "Usa foto molto luminose e 'lifestyle' per attirare l'utenza Depop." : 
+             platform === 'ebay' ? "Assicurati di compilare tutti i dettagli tecnici (Specifiche dell'oggetto) su eBay." : 
+             listing.sellingTip}
+          </p>
         </div>
       </div>
     </div>
@@ -580,6 +656,48 @@ const SellCard = ({
         >
           {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Segna come venduto"}
         </Button>
+      </div>
+    </div>
+  );
+};
+
+const FlipFinderCard = ({ ai }: { ai: NonNullable<AnalysisRow["ai_result"]> }) => {
+  const minPrice = ai.currentEstimate.min;
+  // Bargain price is 60% of min estimate or less
+  const bargainPrice = Math.floor(minPrice * 0.6);
+  const searchQuery = encodeURIComponent(`${ai.identification.brand || ""} ${ai.identification.name}`);
+  
+  // Vinted doesn't support easy price_to via URL parameters in a simple way without more params, 
+  // but we can try to append catalog filters if we know the structure.
+  // Standard search: catalog?search_text=...
+  // Adding price filter (experimental/best effort for Vinted URL structure)
+  const flipUrl = `https://www.vinted.it/catalog?search_text=${searchQuery}&price_to=${bargainPrice}&order=price_low_to_high`;
+
+  return (
+    <div className="card-soft bg-black text-white border-2 border-black shadow-[8px_8px_0px_0px_rgba(255,222,30,1)] relative overflow-hidden group">
+      <div className="absolute top-0 right-0 p-16 bg-accent/20 rounded-full blur-3xl -mr-8 -mt-8 pointer-events-none"></div>
+      
+      <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <div className="p-2 bg-accent rounded-lg text-black">
+              <Zap className="h-5 w-5 fill-current" />
+            </div>
+            <h2 className="font-display text-2xl font-black uppercase tracking-tight">Flip Finder <span className="text-accent">(Beta)</span></h2>
+          </div>
+          <p className="mt-4 text-white/80 font-medium max-w-xl">
+            Vuoi fare un affare? Cerchiamo per te lo stesso oggetto in vendita a meno di <span className="text-accent font-black text-xl">€{bargainPrice}</span>. 
+            Se lo trovi a questo prezzo, il tuo potenziale di guadagno è enorme!
+          </p>
+        </div>
+        
+        <div className="w-full md:w-auto">
+          <Button asChild size="lg" className="w-full md:w-auto h-16 px-8 rounded-2xl bg-accent text-black hover:bg-accent/90 border-2 border-black shadow-[4px_4px_0px_0px_rgba(255,255,255,0.3)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all">
+            <a href={flipUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-lg font-black uppercase">
+              Trova Affari <ExternalLink className="h-5 w-5" />
+            </a>
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -58,9 +58,11 @@ export interface AnalysisResult {
   };
 }
 
-export interface VintedListing {
+export interface MultiPlatformListing {
   title: string;
   description: string;
+  depopDescription?: string;
+  ebayDescription?: string;
   hashtags: string[];
   suggestedPrice: number;
   vintedCategory: string;
@@ -73,7 +75,7 @@ export interface AnalysisRow {
   photos: string[];
   purchase_price: number | null;
   ai_result: AnalysisResult | null;
-  vinted_listing: VintedListing | null;
+  vinted_listing: MultiPlatformListing | null;
   status: string;
   created_at: string;
   updated_at: string;

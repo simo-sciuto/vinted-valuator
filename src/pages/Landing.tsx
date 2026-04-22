@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Camera, Sparkles, TrendingUp, Tag, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/AppHeader";
+import { FlipDiscovery } from "@/components/FlipDiscovery";
 
 const Landing = () => {
   return (
@@ -10,35 +11,35 @@ const Landing = () => {
 
       <main className="pt-32">
         {/* Hero */}
-        <section className="container py-12 md:py-20 relative overflow-hidden">
+        <section className="container px-6 py-12 md:py-20 relative overflow-hidden">
           <div className="mx-auto max-w-4xl text-center relative z-10">
-            <span className="pill bg-accent text-accent-foreground border-2 border-black animate-in fade-in slide-in-from-bottom-4 duration-700 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all">
-              <Sparkles className="h-4 w-4" />
+            <span className="pill bg-accent text-accent-foreground border-2 border-black animate-in fade-in slide-in-from-bottom-4 duration-700 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all text-[10px] md:text-xs">
+              <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
               L'alleato dei reseller Vinted
             </span>
-            <h1 className="mt-8 font-display text-6xl font-black uppercase leading-[0.9] md:text-8xl tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
+            <h1 className="mt-6 md:mt-8 font-display text-4xl sm:text-5xl md:text-8xl font-black uppercase leading-[0.95] md:leading-[0.9] tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
               Scatta una foto.
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-sun drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">Facciamo noi il resto.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-sun drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] md:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">Facciamo noi il resto.</span>
             </h1>
-            <p className="mt-8 text-xl text-foreground font-medium md:text-2xl animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 max-w-2xl mx-auto">
+            <p className="mt-6 md:mt-8 text-lg md:text-2xl text-foreground font-medium animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 max-w-2xl mx-auto leading-tight md:leading-normal">
               Riconosciamo l'oggetto, raccontiamo la storia del brand, lo stimiamo in euro e ti scriviamo l'annuncio Vinted pronto
-              da pubblicare. Pensato per chi rivende ogni giorno.
+              da pubblicare.
             </p>
 
-            <div className="mt-12 flex flex-col items-center justify-center gap-6 sm:flex-row animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
-              <Button asChild size="lg" className="h-16 rounded-full px-12 text-xl btn-neo">
+            <div className="mt-10 md:mt-12 flex flex-col items-stretch sm:items-center justify-center gap-4 sm:flex-row animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
+              <Button asChild size="lg" className="h-14 md:h-16 rounded-full px-8 md:px-12 text-lg md:text-xl btn-neo">
                 <Link to="/auth?mode=signup">
                   Prova gratis
-                  <ArrowRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 md:ml-3 h-5 w-5 md:h-6 md:w-6 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
-              <Button asChild variant="ghost" size="lg" className="h-16 rounded-full px-12 text-xl font-bold uppercase tracking-wider border-2 border-black hover:bg-black hover:text-white transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-1">
-                <Link to="/auth">Ho già un account</Link>
+              <Button asChild variant="ghost" size="lg" className="h-14 md:h-16 rounded-full px-8 md:px-12 text-lg md:text-xl font-bold uppercase tracking-wider border-2 border-black hover:bg-black hover:text-white transition-colors shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-y-1">
+                <Link to="/auth">Ho un account</Link>
               </Button>
             </div>
 
-            <p className="mt-8 text-sm font-bold uppercase tracking-widest text-muted-foreground animate-in fade-in duration-1000 delay-700">Bastano 30 secondi per la tua prima analisi.</p>
+            <p className="mt-8 text-[10px] md:text-sm font-bold uppercase tracking-widest text-muted-foreground animate-in fade-in duration-1000 delay-700">Bastano 30 secondi per la tua prima analisi.</p>
           </div>
 
           {/* Floating preview cards */}
@@ -70,9 +71,25 @@ const Landing = () => {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-sun rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
         </section>
 
+        {/* Flip Discovery Preview */}
+        <section className="container py-20 border-t-2 border-black/5">
+           <div className="mx-auto max-w-5xl">
+             <div className="mb-12 text-center">
+                <span className="pill bg-black text-white text-[10px] font-black uppercase mb-4">Live Discovery</span>
+                <h2 className="font-display text-4xl font-black uppercase md:text-5xl">Affari del Giorno (Market Scout)</h2>
+                <p className="mt-4 text-xl text-muted-foreground font-medium">Scopri cosa stanno trovando i nostri algoritmi in questo momento sui marketplace.</p>
+             </div>
+             <FlipDiscovery limit={3} />
+             <div className="mt-12 text-center">
+                <Button asChild variant="outline" className="h-12 rounded-full border-2 border-black font-bold uppercase shadow-pop hover:shadow-none hover:translate-y-1 transition-all">
+                  <Link to="/auth?mode=signup">Accedi per sbloccare tutti i deal</Link>
+                </Button>
+             </div>
+           </div>
+        </section>
+
         {/* Features grid */}
         <section className="bg-gradient-to-b from-background to-pop/20 py-32 relative border-y-2 border-black">
-          <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-30 mix-blend-overlay pointer-events-none"></div>
           <div className="container relative z-10">
             <div className="mx-auto max-w-3xl text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
               <h2 className="font-display text-5xl font-black uppercase md:text-6xl">Tutto quello che ti serve per vendere al top</h2>
@@ -107,18 +124,18 @@ const Landing = () => {
         </section>
 
         {/* CTA */}
-        <section className="container py-32">
-          <div className="mx-auto max-w-5xl rounded-[40px] bg-gradient-hero border-2 border-black p-12 text-center shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] md:p-24 relative overflow-hidden group">
+        <section className="container px-6 py-20 md:py-32">
+          <div className="mx-auto max-w-5xl rounded-[32px] md:rounded-[40px] bg-gradient-hero border-2 border-black p-8 md:p-24 text-center shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] md:shadow-[16px_16px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#00000015_2px,transparent_2px),linear-gradient(to_bottom,#00000015_2px,transparent_2px)] bg-[size:48px_48px] opacity-30"></div>
             <div className="relative z-10">
-              <h2 className="font-display text-5xl font-black uppercase tracking-tighter text-black md:text-7xl">
+              <h2 className="font-display text-4xl font-black uppercase tracking-tighter text-black md:text-7xl leading-none">
                 Smetti di tirare a indovinare il prezzo.
               </h2>
-              <p className="mt-8 text-2xl text-black/90 font-bold">Crea l'account, carica la prima foto, scopri il vero valore.</p>
-              <Button asChild size="lg" className="mt-12 h-16 rounded-full bg-black px-12 text-xl text-white hover:bg-black/90 btn-neo border-transparent">
+              <p className="mt-6 md:mt-8 text-lg md:text-2xl text-black/90 font-bold leading-tight">Crea l'account, carica la prima foto, scopri il vero valore.</p>
+              <Button asChild size="lg" className="mt-10 md:mt-12 h-14 md:h-16 w-full sm:w-auto rounded-full bg-black px-12 text-lg md:text-xl text-white hover:bg-black/90 btn-neo border-transparent">
                 <Link to="/auth?mode=signup">
                   Inizia subito
-                  <ArrowRight className="ml-3 h-6 w-6" />
+                  <ArrowRight className="ml-3 h-5 w-5 md:h-6 md:w-6" />
                 </Link>
               </Button>
             </div>

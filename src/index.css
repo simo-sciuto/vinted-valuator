@@ -97,6 +97,8 @@
 
   body {
     @apply bg-background text-foreground antialiased;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   h1,
@@ -107,6 +109,8 @@
     font-weight: 900;
     text-transform: uppercase;
     @apply tracking-tighter;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { AnalysisResult, AnalysisRow, VintedListing } from "@/types/analysis";
+import type { AnalysisResult, AnalysisRow, MultiPlatformListing } from "@/types/analysis";
 
 export async function uploadPhotos(userId: string, files: File[]): Promise<string[]> {
   const urls: string[] = [];
@@ -27,13 +27,13 @@ export async function callAnalyzeItem(photoUrls: string[], purchasePrice: number
   return data.result as AnalysisResult;
 }
 
-export async function callGenerateListing(analysis: AnalysisResult): Promise<VintedListing> {
+export async function callGenerateListing(analysis: AnalysisResult): Promise<MultiPlatformListing> {
   const { data, error } = await supabase.functions.invoke("generate-listing", {
     body: { analysis },
   });
   if (error) throw new Error(error.message);
   if (!data?.listing) throw new Error("Annuncio non generato");
-  return data.listing as VintedListing;
+  return data.listing as MultiPlatformListing;
 }
 
 export async function createAnalysisRecord(input: {
@@ -59,7 +59,7 @@ export async function createAnalysisRecord(input: {
   return data.id;
 }
 
-export async function updateAnalysisListing(id: string, listing: VintedListing): Promise<void> {
+export async function updateAnalysisListing(id: string, listing: MultiPlatformListing): Promise<void> {
   const { error } = await supabase
     .from("analyses")
     .update({ vinted_listing: listing as unknown as never })

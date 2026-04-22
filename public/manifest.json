@@ -1,0 +1,26 @@
+{
+  "name": "ReVinted — Stima AI per Vinted",
+  "short_name": "ReVinted",
+  "description": "Analizza i tuoi oggetti vintage con l'AI e genera annunci Vinted perfetti.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#FFFFF5",
+  "theme_color": "#000000",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "shopping"],
+  "screenshots": []
+}

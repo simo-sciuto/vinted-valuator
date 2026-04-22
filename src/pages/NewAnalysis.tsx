@@ -154,9 +154,9 @@ const NewAnalysis = () => {
     <div className="min-h-screen bg-background">
       <AppHeader />
 
-      <main className="container max-w-3xl py-10 pt-32">
-        <h1 className="font-display text-4xl font-black uppercase tracking-tighter md:text-5xl">Nuova analisi</h1>
-        <p className="mt-1 text-muted-foreground">
+      <main className="container max-w-3xl px-6 py-10 pt-24 md:pt-32 pb-32 md:pb-10">
+        <h1 className="font-display text-4xl font-black uppercase tracking-tighter md:text-5xl leading-none">Nuova analisi</h1>
+        <p className="mt-2 text-muted-foreground font-medium">
           Aggiungi le foto dell'oggetto. Più angolazioni = stima più precisa.
         </p>
 
@@ -172,33 +172,33 @@ const NewAnalysis = () => {
           >
             <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
             <input {...getInputProps()} />
-            <div className="relative z-10 flex flex-col items-center py-16 text-center">
-              <div className="grid h-20 w-20 place-items-center rounded-2xl bg-pop text-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
-                <Camera className="h-10 w-10" />
+            <div className="relative z-10 flex flex-col items-center py-10 md:py-16 text-center">
+              <div className="grid h-16 w-16 md:h-20 md:w-20 place-items-center rounded-2xl bg-pop text-black border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] group-hover:scale-110 group-hover:rotate-6 transition-transform duration-300">
+                <Camera className="h-8 w-8 md:h-10 md:w-10" />
               </div>
-              <p className="mt-8 font-display text-2xl font-black uppercase">
-                {step === "converting" ? "Elaborazione foto in corso..." : isDragActive ? "Lascia qui le foto" : "Trascina le foto o clicca per scegliere"}
+              <p className="mt-6 md:mt-8 font-display text-xl md:text-2xl font-black uppercase px-4">
+                {step === "converting" ? "Elaborazione foto..." : isDragActive ? "Lascia qui le foto" : "Scatta o scegli le foto"}
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Fino a {MAX_PHOTOS} immagini · max {MAX_SIZE_MB}MB ciascuna · jpg, png, webp, heic
+              <p className="mt-2 text-xs text-muted-foreground">
+                Max {MAX_PHOTOS} immagini · jpg, png, heic
               </p>
             </div>
           </div>
 
           {/* Preview */}
           {files.length > 0 && (
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+            <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
               {files.map((f, i) => (
-                <div key={`${f.name}-${i}`} className="group relative aspect-square overflow-hidden rounded-[24px] border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] hover:-translate-y-1 transition-all">
+                <div key={`${f.name}-${i}`} className="group relative aspect-square overflow-hidden rounded-2xl border-2 border-black shadow-[3px_3px_0px_rgba(0,0,0,1)] hover:-translate-y-0.5 transition-all">
                   <img src={URL.createObjectURL(f)} alt={`Foto ${i + 1}`} className="h-full w-full object-cover" />
                   {!busy && (
                     <button
                       type="button"
                       onClick={() => removeFile(i)}
-                      className="absolute right-1.5 top-1.5 grid h-7 w-7 place-items-center rounded-full bg-background/90 text-foreground shadow"
+                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-background/90 text-foreground shadow border-black border"
                       aria-label="Rimuovi"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      <X className="h-3 w-3" />
                     </button>
                   )}
                 </div>
@@ -226,7 +226,7 @@ const NewAnalysis = () => {
                 value={purchasePrice}
                 onChange={(e) => setPurchasePrice(e.target.value)}
                 disabled={busy}
-                className="h-16 text-2xl font-bold bg-white focus:bg-white border-2 border-black rounded-xl transition-all shadow-[inset_4px_4px_0px_rgba(0,0,0,0.05)] focus:shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)]"
+                className="h-16 text-2xl font-bold bg-card focus:bg-card border-2 border-black rounded-xl transition-all shadow-[inset_4px_4px_0px_rgba(0,0,0,0.05)] focus:shadow-[inset_2px_2px_0px_rgba(0,0,0,0.1)]"
               />
             </div>
             </div>

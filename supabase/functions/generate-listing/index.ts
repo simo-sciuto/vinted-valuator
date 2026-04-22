@@ -22,7 +22,17 @@ const LISTING_TOOL = {
         description: {
           type: "string",
           description:
-            "Descrizione informale e umana, 4-7 frasi corte. Tono diretto, amichevole, da reseller. Include condizioni, dimensioni se rilevanti, dettagli che fanno innamorare. Niente emoji esagerate. In italiano.",
+            "Descrizione per Vinted: informale e umana, 4-7 frasi corte. Tono diretto, amichevole. In italiano.",
+        },
+        depopDescription: {
+          type: "string",
+          description:
+            "Descrizione per Depop: molto 'aesthetic', focus su stile, come abbinarlo, vibrazioni dell'oggetto. Include 3-5 hashtag specifici Depop alla fine. In italiano.",
+        },
+        ebayDescription: {
+          type: "string",
+          description:
+            "Descrizione per eBay: professionale, tecnica, dettagliata su condizioni, misure (se ipotizzabili) e spedizione sicura. Tono serio. In italiano.",
         },
         hashtags: {
           type: "array",
@@ -46,7 +56,7 @@ const LISTING_TOOL = {
           description: "Un consiglio breve per vendere meglio (1 frase).",
         },
       },
-      required: ["title", "description", "hashtags", "suggestedPrice", "vintedCategory", "sellingTip"],
+      required: ["title", "description", "depopDescription", "ebayDescription", "hashtags", "suggestedPrice", "vintedCategory", "sellingTip"],
       additionalProperties: false,
     },
   },
@@ -90,7 +100,7 @@ serve(async (req) => {
           {
             role: "user",
             content:
-              "Crea un annuncio Vinted partendo da questa analisi dell'oggetto:\n\n" +
+              "Crea un annuncio multi-piattaforma (Vinted, Depop, eBay) partendo da questa analisi dell'oggetto:\n\n" +
               JSON.stringify(body.analysis, null, 2),
           },
         ],
