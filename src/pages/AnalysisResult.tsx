@@ -350,6 +350,9 @@ const CurrentEstimateCard = ({ ai }: { ai: NonNullable<AnalysisRow["ai_result"]>
   const vintedUrl = `https://www.vinted.it/catalog?search_text=${searchQuery}`;
   const ebayUrl = `https://www.ebay.it/sch/i.html?_nkw=${searchQuery}&LH_Sold=1&LH_Complete=1`;
 
+  const cal = ai.priceCalibration;
+  const levelColor = cal?.level === "alta" ? "bg-[#4ade80]" : cal?.level === "media" ? "bg-accent" : "bg-[#f87171]";
+
   return (
     <div className="card-soft bg-accent text-accent-foreground border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-none">
       <div className="flex items-center justify-between">
@@ -359,6 +362,26 @@ const CurrentEstimateCard = ({ ai }: { ai: NonNullable<AnalysisRow["ai_result"]>
       <p className="mt-6 font-display text-5xl font-black tracking-tighter">
         € {ai.currentEstimate.min} – {ai.currentEstimate.max}
       </p>
+      {cal && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          <span className={cn("pill text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-none text-[10px]", levelColor)}>
+            Confidenza: {cal.level} ({Math.round((cal.confidence ?? 0) * 100)}%)
+          </span>
+          <span className="pill bg-card text-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-none text-[10px]">
+            {cal.sampleSize} fonti
+          </span>
+          {cal.weightedAverage != null && (
+            <span className="pill bg-card text-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-none text-[10px]">
+              Media €{Math.round(cal.weightedAverage)}{cal.stdDeviation ? ` ±${Math.round(cal.stdDeviation)}` : ""}
+            </span>
+          )}
+          {cal.outliersRemoved ? (
+            <span className="pill bg-card text-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-none text-[10px]">
+              {cal.outliersRemoved} outlier scartati
+            </span>
+          ) : null}
+        </div>
+      )}
       <p className="mt-3 text-sm text-accent-foreground/70 leading-snug font-medium">{ai.currentEstimate.reasoning}</p>
       
       <div className="mt-6 grid grid-cols-2 gap-3">
