@@ -89,6 +89,22 @@ const ANALYZE_TOOL = {
           required: ["min", "max", "reasoning"],
           additionalProperties: false,
         },
+        pricePoints: {
+          type: "array",
+          description: "Estrai TUTTI i prezzi di vendita reali trovati nella ricerca di mercato fornita nel prompt. Includi anche prezzi attualmente in vendita se non hai dati di sold. Minimo 3 punti se disponibili.",
+          items: {
+            type: "object",
+            properties: {
+              source: { type: "string", description: "Piattaforma: ebay, vinted, depop, discogs, grailed, catawiki, altro" },
+              price: { type: "number", description: "Prezzo in EUR (convertito se necessario)" },
+              kind: { type: "string", enum: ["sold", "listed", "estimate"], description: "sold = realmente venduto (peso massimo), listed = attualmente in vendita, estimate = stima generica" },
+              year: { type: "number", description: "Anno della vendita o annuncio (es. 2024, 2025)" },
+              note: { type: "string", description: "Breve nota su condizione o variante" },
+            },
+            required: ["source", "price", "kind", "year"],
+            additionalProperties: false,
+          },
+        },
         futureEstimate: {
           type: "object",
           properties: {
