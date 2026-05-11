@@ -48,6 +48,8 @@ export interface AnalysisResult {
     trend: "in forte crescita" | "in crescita" | "stabile" | "in calo";
     note: string;
   };
+  marketResearch?: string;
+  sources?: { title: string; url: string }[];
   profit?: {
     purchasePrice: number;
     currentProfit: number;

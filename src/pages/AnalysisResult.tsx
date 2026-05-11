@@ -207,12 +207,7 @@ const AnalysisResult = () => {
                 </li>
               </ul>
             </div>
-          ) : (
-            <div className="card-soft md:col-span-2">
-              <h2 className="font-display text-xl font-bold uppercase">La storia</h2>
-              <p className="mt-4 leading-relaxed text-foreground/90 font-medium">{ai.story}</p>
-            </div>
-          )}
+          ) : null}
           
           {ai.marketAnalysis && (
             <div className="card-soft bg-black text-white md:col-span-2">
@@ -248,6 +243,32 @@ const AnalysisResult = () => {
                     <span className="text-white/90 italic">{ai.marketAnalysis.restorationTips}</span>
                   </li>
                 )}
+              </ul>
+            </div>
+          )}
+
+          {ai.sources && ai.sources.length > 0 && (
+            <div className="card-soft md:col-span-2">
+              <h2 className="font-display text-xl font-bold uppercase flex items-center gap-2">
+                <ExternalLink className="h-5 w-5 text-primary" /> Fonti consultate
+              </h2>
+              {ai.marketResearch && (
+                <p className="mt-2 text-sm text-foreground/80 leading-relaxed">{ai.marketResearch}</p>
+              )}
+              <ul className="mt-4 flex flex-wrap gap-2">
+                {ai.sources.map((s, i) => (
+                  <li key={i}>
+                    <a
+                      href={s.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20 transition"
+                    >
+                      {s.title || new URL(s.url).hostname.replace("www.", "")}
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           )}
