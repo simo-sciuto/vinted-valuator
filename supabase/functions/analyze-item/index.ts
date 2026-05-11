@@ -137,17 +137,90 @@ serve(async (req) => {
       });
     }
 
+    // ============ STEP 1: identificazione + ricerca di mercato con web grounding ============
+    const researchMessages = [
+      {
+        role: "system",
+        content:
+          "Sei un perito di mercato secondario (Vinted, eBay, Depop, Discogs, Grailed, Catawiki). " +
+          "Hai accesso alla ricerca web tramite lo strumento google_search: USALO SEMPRE per verificare prezzi attuali e dettagli sull'oggetto in foto. " +
+          "Cerca su eBay 'sold/venduti', Vinted Italia, Discogs marketplace, Grailed, Catawiki. " +
+          "Scrivi in italiano. Restituisci un report di max 800 parole con: " +
+          "1) identificazione precisa (brand, modello, anno), 2) 3-6 esempi di vendite recenti reali (piattaforma, prezzo €, anno), " +
+          "3) range prezzo attuale onesto in EUR, 4) trend futuro 1/3/5 anni con motivazione, " +
+          "5) elenco URL fonti consultate (una per riga, formato: URL | titolo breve).",
+      },
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "Identifica questo oggetto e ricerca su web prezzi di vendita reali per la rivendita in Europa." },
+          ...body.photoUrls.map((url) => ({ type: "image_url", image_url: { url } })),
+        ],
+      },
+    ];
+
+    let marketResearch = "";
+    const sources: { title: string; url: string }[] = [];
+
+    try {
+      const researchResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-pro",
+          messages: researchMessages,
+          tools: [{ type: "google_search" }],
+        }),
+      });
+
+      if (researchResp.ok) {
+        const rData = await researchResp.json();
+        marketResearch = rData.choices?.[0]?.message?.content ?? "";
+
+        // estrai citazioni dai metadata grounding (Gemini)
+        const grounding =
+          rData.choices?.[0]?.message?.grounding_metadata ??
+          rData.choices?.[0]?.grounding_metadata ??
+          rData.choices?.[0]?.message?.citations;
+        if (Array.isArray(grounding)) {
+          for (const g of grounding) {
+            if (g?.url) sources.push({ url: g.url, title: g.title ?? g.url });
+          }
+        } else if (grounding?.grounding_chunks) {
+          for (const c of grounding.grounding_chunks) {
+            const w = c?.web;
+            if (w?.uri) sources.push({ url: w.uri, title: w.title ?? w.uri });
+          }
+        }
+
+        // fallback: estrai URL dal testo (formato "URL | titolo")
+        if (sources.length === 0 && marketResearch) {
+          const urlRegex = /(https?:\/\/[^\s|)\]]+)\s*\|?\s*([^\n]*)/g;
+          let m;
+          while ((m = urlRegex.exec(marketResearch)) !== null && sources.length < 10) {
+            const url = m[1].replace(/[.,;)]+$/, "");
+            const title = (m[2] || "").trim().slice(0, 80) || new URL(url).hostname.replace("www.", "");
+            if (!sources.some((s) => s.url === url)) sources.push({ url, title });
+          }
+        }
+      } else {
+        console.warn("Research step failed:", researchResp.status, await researchResp.text());
+      }
+    } catch (err) {
+      console.warn("Research step error:", err);
+    }
+
+    // ============ STEP 2: analisi strutturata, calibrata sulla ricerca ============
     const userContent: Array<Record<string, unknown>> = [
       {
         type: "text",
         text:
-          "Sei un perito di livello mondiale, storico del design e massimo esperto di mercato secondario (Vinted/Grailed). " +
-          "ATTENZIONE: La precisione è vitale. Usa il campo 'visualAnalysis' per studiare attentamente le foto prima di azzardare un brand o un nome. " +
-          "Leggi le etichette, scruta i loghi e confrontali mentalmente con il tuo database. Se non sei sicuro del brand, lascialo vuoto piuttosto che inventare. " +
-          "La tua analisi deve essere un testo RICCO, VERBOSO e COLTO. Voglio paragrafi lunghi ed esaustivi, non singole frasi. " +
-          "Analizza i materiali, spiega esattamente come capire se è originale (legit check), dai trucchi di restauro/lavaggio. " +
-          "Sii precisissimo sui prezzi basandoti sullo storico di mercato europeo. " +
-          "Rispondi in italiano con un tono sofisticato.",
+          "Sei un perito di livello mondiale e storico del design. " +
+          "Analizza le foto e produci una scheda strutturata RICCA e VERBOSA (paragrafi lunghi). " +
+          "Sii preciso su legit check, materiali, restauro. Rispondi in italiano colto.\n\n" +
+          (marketResearch
+            ? "=== RICERCA DI MERCATO REALE (usala come fonte primaria per i prezzi) ===\n" + marketResearch
+            : "(ricerca web non disponibile, usa la tua conoscenza)"),
       },
       ...body.photoUrls.map((url) => ({ type: "image_url", image_url: { url } })),
     ];
@@ -159,15 +232,15 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "gpt-4o",
+        model: "google/gemini-2.5-pro",
         messages: [
           {
             role: "system",
             content:
-              "Sei un esperto perito di oggetti vintage, vinili, arte e abbigliamento di seconda mano. " +
-              "Conosci bene il mercato europeo della rivendita (Vinted, eBay, Discogs, Catawiki). " +
-              "Restituisci sempre stime in euro realistiche e prudenti, mai gonfiate. " +
-              "Devi sempre chiamare la funzione submit_item_analysis con il risultato strutturato.",
+              "Sei un perito di oggetti vintage, vinili, arte e abbigliamento di seconda mano. " +
+              "Conosci il mercato europeo (Vinted, eBay, Discogs, Catawiki). " +
+              "Le stime in EUR DEVONO essere coerenti con i prezzi reali forniti nel contesto di ricerca. " +
+              "Chiama sempre submit_item_analysis con il risultato strutturato.",
           },
           { role: "user", content: userContent },
         ],
@@ -208,6 +281,8 @@ serve(async (req) => {
     }
 
     const result = JSON.parse(toolCall.function.arguments);
+    result.marketResearch = marketResearch || undefined;
+    result.sources = sources.length > 0 ? sources : undefined;
 
     if (typeof body.purchasePrice === "number" && body.purchasePrice >= 0) {
       const avgNow = (result.currentEstimate.min + result.currentEstimate.max) / 2;
