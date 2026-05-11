@@ -50,6 +50,18 @@ export interface AnalysisResult {
   };
   marketResearch?: string;
   sources?: { title: string; url: string }[];
+  pricePoints?: { source: string; price: number; kind: "sold" | "listed" | "estimate"; year: number; note?: string }[];
+  priceCalibration?: {
+    weightedAverage: number | null;
+    stdDeviation?: number;
+    coefficientOfVariation?: number;
+    sampleSize: number;
+    outliersRemoved?: number;
+    confidence: number;
+    level: "alta" | "media" | "bassa";
+    note?: string;
+    aiOriginal?: { min: number; max: number };
+  };
   profit?: {
     purchasePrice: number;
     currentProfit: number;
