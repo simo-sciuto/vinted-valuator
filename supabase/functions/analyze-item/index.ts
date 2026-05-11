@@ -121,7 +121,7 @@ const ANALYZE_TOOL = {
           additionalProperties: false,
         },
       },
-      required: ["visualAnalysis", "identification", "marketAnalysis", "historicalContext", "currentEstimate", "futureEstimate"],
+      required: ["visualAnalysis", "identification", "marketAnalysis", "historicalContext", "currentEstimate", "pricePoints", "futureEstimate"],
       additionalProperties: false,
     },
   },
