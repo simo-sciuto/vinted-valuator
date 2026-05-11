@@ -207,12 +207,7 @@ const AnalysisResult = () => {
                 </li>
               </ul>
             </div>
-          ) : (
-            <div className="card-soft md:col-span-2">
-              <h2 className="font-display text-xl font-bold uppercase">La storia</h2>
-              <p className="mt-4 leading-relaxed text-foreground/90 font-medium">{ai.story}</p>
-            </div>
-          )}
+          ) : null}
           
           {ai.marketAnalysis && (
             <div className="card-soft bg-black text-white md:col-span-2">
