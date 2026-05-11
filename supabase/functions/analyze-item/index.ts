@@ -89,6 +89,22 @@ const ANALYZE_TOOL = {
           required: ["min", "max", "reasoning"],
           additionalProperties: false,
         },
+        pricePoints: {
+          type: "array",
+          description: "Estrai TUTTI i prezzi di vendita reali trovati nella ricerca di mercato fornita nel prompt. Includi anche prezzi attualmente in vendita se non hai dati di sold. Minimo 3 punti se disponibili.",
+          items: {
+            type: "object",
+            properties: {
+              source: { type: "string", description: "Piattaforma: ebay, vinted, depop, discogs, grailed, catawiki, altro" },
+              price: { type: "number", description: "Prezzo in EUR (convertito se necessario)" },
+              kind: { type: "string", enum: ["sold", "listed", "estimate"], description: "sold = realmente venduto (peso massimo), listed = attualmente in vendita, estimate = stima generica" },
+              year: { type: "number", description: "Anno della vendita o annuncio (es. 2024, 2025)" },
+              note: { type: "string", description: "Breve nota su condizione o variante" },
+            },
+            required: ["source", "price", "kind", "year"],
+            additionalProperties: false,
+          },
+        },
         futureEstimate: {
           type: "object",
           properties: {
@@ -105,7 +121,7 @@ const ANALYZE_TOOL = {
           additionalProperties: false,
         },
       },
-      required: ["visualAnalysis", "identification", "marketAnalysis", "historicalContext", "currentEstimate", "futureEstimate"],
+      required: ["visualAnalysis", "identification", "marketAnalysis", "historicalContext", "currentEstimate", "pricePoints", "futureEstimate"],
       additionalProperties: false,
     },
   },
@@ -283,6 +299,87 @@ serve(async (req) => {
     const result = JSON.parse(toolCall.function.arguments);
     result.marketResearch = marketResearch || undefined;
     result.sources = sources.length > 0 ? sources : undefined;
+
+    // ============ CALIBRAZIONE: media ponderata + scarti + confidenza ============
+    const points: Array<{ source: string; price: number; kind: string; year: number; weight: number }> = [];
+    const currentYear = new Date().getFullYear();
+    const kindWeight: Record<string, number> = { sold: 1.0, listed: 0.6, estimate: 0.3 };
+    const sourceWeight: Record<string, number> = {
+      ebay: 1.0, discogs: 1.0, catawiki: 0.95, grailed: 0.9, vinted: 0.8, depop: 0.75, altro: 0.5,
+    };
+
+    if (Array.isArray(result.pricePoints)) {
+      for (const p of result.pricePoints) {
+        if (typeof p.price !== "number" || p.price <= 0 || p.price > 1_000_000) continue;
+        const ageYears = Math.max(0, currentYear - (p.year ?? currentYear));
+        const recency = Math.exp(-ageYears / 2); // decadimento esponenziale, half-life ~1.4 anni
+        const ks = String(p.kind || "").toLowerCase();
+        const ss = String(p.source || "").toLowerCase();
+        const w = (kindWeight[ks] ?? 0.4) * (sourceWeight[ss] ?? 0.5) * recency;
+        points.push({ ...p, weight: w });
+      }
+    }
+
+    if (points.length >= 2) {
+      // rimuovi outlier estremi tramite IQR
+      const sorted = [...points].sort((a, b) => a.price - b.price);
+      const q = (p: number) => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))].price;
+      const q1 = q(0.25), q3 = q(0.75);
+      const iqr = q3 - q1;
+      const lo = q1 - 1.5 * iqr;
+      const hi = q3 + 1.5 * iqr;
+      const filtered = sorted.filter((p) => p.price >= lo && p.price <= hi);
+      const used = filtered.length >= 2 ? filtered : sorted;
+
+      const totW = used.reduce((s, p) => s + p.weight, 0) || 1;
+      const wMean = used.reduce((s, p) => s + p.price * p.weight, 0) / totW;
+      const wVar = used.reduce((s, p) => s + p.weight * (p.price - wMean) ** 2, 0) / totW;
+      const wStd = Math.sqrt(wVar);
+      const cv = wMean > 0 ? wStd / wMean : 1; // coefficiente di variazione
+
+      // confidenza: più punti + meno dispersione = più alta
+      const nFactor = Math.min(1, used.length / 6);
+      const dispFactor = Math.max(0, 1 - Math.min(cv, 1));
+      const soldRatio = used.filter((p) => p.kind === "sold").length / used.length;
+      const confidence = Number((0.35 * nFactor + 0.45 * dispFactor + 0.20 * soldRatio).toFixed(2));
+      const level = confidence >= 0.7 ? "alta" : confidence >= 0.45 ? "media" : "bassa";
+
+      // fascia calibrata = media ± 1σ (clampata >0)
+      const calMin = Math.max(1, Math.round(wMean - wStd));
+      const calMax = Math.max(calMin + 1, Math.round(wMean + wStd));
+
+      // miscela con la stima AI (70% calibrata se >=3 punti, altrimenti 50/50)
+      const blend = used.length >= 3 ? 0.7 : 0.5;
+      const aiMin = result.currentEstimate.min;
+      const aiMax = result.currentEstimate.max;
+      const finalMin = Math.round(calMin * blend + aiMin * (1 - blend));
+      const finalMax = Math.round(calMax * blend + aiMax * (1 - blend));
+
+      result.priceCalibration = {
+        weightedAverage: Number(wMean.toFixed(2)),
+        stdDeviation: Number(wStd.toFixed(2)),
+        coefficientOfVariation: Number(cv.toFixed(3)),
+        sampleSize: used.length,
+        outliersRemoved: points.length - used.length,
+        confidence,
+        level,
+        aiOriginal: { min: aiMin, max: aiMax },
+      };
+      result.currentEstimate = {
+        min: finalMin,
+        max: finalMax,
+        reasoning: `Media ponderata €${wMean.toFixed(0)} su ${used.length} fonti reali (σ €${wStd.toFixed(0)}, confidenza ${level}). ${result.currentEstimate.reasoning}`,
+      };
+    } else {
+      result.priceCalibration = {
+        weightedAverage: null,
+        sampleSize: points.length,
+        confidence: 0.3,
+        level: "bassa",
+        note: "Pochi dati di mercato reali, stima basata principalmente su conoscenza AI.",
+        aiOriginal: { min: result.currentEstimate.min, max: result.currentEstimate.max },
+      };
+    }
 
     if (typeof body.purchasePrice === "number" && body.purchasePrice >= 0) {
       const avgNow = (result.currentEstimate.min + result.currentEstimate.max) / 2;
