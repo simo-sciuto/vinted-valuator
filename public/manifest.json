@@ -1,7 +1,7 @@
 {
-  "name": "ReVinted — Stima AI per Vinted",
-  "short_name": "ReVinted",
-  "description": "Analizza i tuoi oggetti vintage con l'AI e genera annunci Vinted perfetti.",
+  "name": "STIMA — Scopri il valore reale",
+  "short_name": "STIMA",
+  "description": "Carica una foto e scopri il valore reale di qualsiasi oggetto. Stima precisa e annuncio Vinted pronto.",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#FFFFF5",

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Plus, ImageOff, Trash2, Zap, ExternalLink } from "lucide-react";
+import { Plus, ImageOff, Trash2 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
@@ -100,15 +100,15 @@ const Dashboard = () => {
 
           <TabsContent value="analyses" className="mt-0 focus-visible:outline-none">
             {isLoading ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} className="h-64 rounded-3xl" />
+              <div className="grid gap-2 grid-cols-2 lg:grid-cols-3">
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="aspect-square rounded-2xl" />
                 ))}
               </div>
             ) : !analyses || analyses.length === 0 ? (
               <EmptyState />
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-2 grid-cols-2 lg:grid-cols-3">
                 {analyses.map((a) => (
                   <AnalysisCard key={a.id} analysis={a} onDelete={() => handleDelete(a.id)} />
                 ))}
@@ -118,10 +118,9 @@ const Dashboard = () => {
 
           <TabsContent value="scout" className="mt-0 focus-visible:outline-none">
             <div className="card-soft bg-accent/5 border-2 border-black border-dashed p-8 md:p-12 mb-10 text-center">
-               <h2 className="font-display text-3xl font-black uppercase mb-4">Trova il tuo prossimo Flip</h2>
+               <h2 className="font-display text-3xl font-black uppercase mb-4">Il tuo prossimo acquisto</h2>
                <p className="text-muted-foreground max-w-2xl mx-auto font-medium">
-                 I nostri algoritmi analizzano costantemente i marketplace per individuare oggetti sottoprezzati. 
-                 Prendili prima degli altri per massimizzare il tuo profitto.
+                 Ogni giorno cerchiamo oggetti in vendita a prezzi interessanti. Acquistali prima degli altri.
                </p>
             </div>
             <FlipDiscovery />
@@ -142,9 +141,9 @@ const AnalysisCard = ({ analysis, onDelete }: { analysis: AnalysisRow; onDelete:
   const isPositive = actualProfit >= 0;
 
   return (
-    <div className={`card-soft group flex flex-col overflow-hidden p-0 border-2 border-black hover:-translate-y-2 hover:shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] transition-all ${isSold ? "bg-[#4ade80]/10" : ""}`}>
-      <Link to={`/analysis/${analysis.id}`} className="block">
-        <div className="relative aspect-video sm:aspect-[4/3] overflow-hidden bg-muted border-b-2 border-black">
+    <AlertDialog>
+      <div className="group relative aspect-square overflow-hidden rounded-2xl border-2 border-black shadow-[3px_3px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[5px_5px_0px_0px_rgba(0,0,0,1)] transition-all">
+        <Link to={`/analysis/${analysis.id}`} className="absolute inset-0">
           {photo ? (
             <img
               src={photo}
@@ -153,82 +152,82 @@ const AnalysisCard = ({ analysis, onDelete }: { analysis: AnalysisRow; onDelete:
               loading="lazy"
             />
           ) : (
-            <div className="grid h-full w-full place-items-center text-muted-foreground">
-              <ImageOff className="h-8 w-8" />
+            <div className="h-full w-full bg-muted flex items-center justify-center">
+              <ImageOff className="h-8 w-8 text-muted-foreground/40" />
             </div>
           )}
-          {ai && !isSold && (
-            <span className="pill absolute left-2 top-2 bg-white text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[9px] px-2 py-0.5">
-              {ai.identification.category}
-            </span>
-          )}
-          {isSold && (
-            <span className="pill absolute left-2 top-2 bg-[#4ade80] text-black border-2 border-black shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] text-[9px] px-2 py-0.5">
-              Venduto
-            </span>
-          )}
-        </div>
-      </Link>
-      <div className="flex flex-1 flex-col p-5">
-        <Link to={`/analysis/${analysis.id}`} className="block">
-          <h3 className="line-clamp-1 font-display text-lg font-semibold">
-            {ai?.identification.name ?? "Analisi in corso"}
-          </h3>
-          <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
-            {ai?.identification.brand || ai?.identification.artist || ai?.identification.era}
-          </p>
-        </Link>
-        <div className="mt-auto flex items-center justify-between pt-4 border-t-2 border-black/5 mt-4">
-          <div>
+
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+
+          {/* Category / sold badge */}
+          <div className="absolute top-2 left-2">
             {isSold ? (
-              <>
-                <p className="font-display text-2xl font-black text-foreground tracking-tight">
-                  € {soldPrice}
-                </p>
-                <p className={`text-sm font-bold uppercase ${isPositive ? "text-green-600" : "text-red-600"}`}>
-                  {isPositive ? "+" : ""}€ {actualProfit.toFixed(2)}
-                </p>
-              </>
-            ) : (
-              <>
-                {ai && (
-                  <p className="font-display text-2xl font-black text-foreground tracking-tight">
-                    € {ai.currentEstimate.min}–{ai.currentEstimate.max}
+              <span className="pill bg-[#4ade80] text-black border border-black/30 text-[9px] px-2 py-0.5 font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,0.4)]">
+                Venduto
+              </span>
+            ) : ai ? (
+              <span className="pill bg-white/90 text-black border border-black/20 text-[9px] px-2 py-0.5 font-black shadow-[1px_1px_0px_0px_rgba(0,0,0,0.3)]">
+                {ai.identification.category}
+              </span>
+            ) : null}
+          </div>
+
+          {/* Bottom info */}
+          <div className="absolute bottom-0 left-0 right-0 p-2.5">
+            <p className="text-white font-black text-xs leading-tight line-clamp-2 drop-shadow-sm">
+              {ai?.identification.name ?? "Analisi in corso"}
+            </p>
+            <div className="mt-1 flex items-center justify-between gap-1">
+              {isSold ? (
+                <>
+                  <p className="text-white font-black text-sm leading-none">€{soldPrice}</p>
+                  <p className={`text-[10px] font-black ${isPositive ? "text-[#4ade80]" : "text-[#f87171]"}`}>
+                    {isPositive ? "+" : ""}€{Math.abs(actualProfit).toFixed(0)}
                   </p>
-                )}
-                <p className="text-xs text-muted-foreground mt-1">
+                </>
+              ) : ai ? (
+                <p className="text-white font-black text-sm leading-none">
+                  €{ai.currentEstimate.min}–{ai.currentEstimate.max}
+                </p>
+              ) : (
+                <p className="text-white/60 text-[10px] font-medium">
                   {new Date(analysis.created_at).toLocaleDateString("it-IT")}
                 </p>
-              </>
-            )}
+              )}
+            </div>
           </div>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Elimina">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent className="border-4 border-black rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="font-display text-2xl font-black uppercase">Sei sicuro?</AlertDialogTitle>
-                <AlertDialogDescription className="text-base font-medium">
-                  Questa azione non può essere annullata. Tutte le foto e i dati dell'analisi verranno eliminati definitivamente.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter className="mt-4 gap-2">
-                <AlertDialogCancel className="rounded-full border-2 border-black font-bold">Annulla</AlertDialogCancel>
-                <AlertDialogAction 
-                  onClick={onDelete}
-                  className="rounded-full bg-destructive text-destructive-foreground border-2 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
-                >
-                  Elimina ora
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
+        </Link>
+
+        {/* Delete — visible on hover/long-press */}
+        <AlertDialogTrigger asChild>
+          <button
+            className="absolute top-2 right-2 h-7 w-7 flex items-center justify-center rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black active:opacity-100"
+            aria-label="Elimina"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </AlertDialogTrigger>
       </div>
-    </div>
+
+      <AlertDialogContent className="border-4 border-black rounded-[32px] shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="font-display text-2xl font-black uppercase">Sei sicuro?</AlertDialogTitle>
+          <AlertDialogDescription className="text-base font-medium">
+            Questa azione non può essere annullata. Tutte le foto e i dati dell'analisi verranno eliminati definitivamente.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="mt-4 gap-2">
+          <AlertDialogCancel className="rounded-full border-2 border-black font-bold">Annulla</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={onDelete}
+            className="rounded-full bg-destructive text-destructive-foreground border-2 border-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1 transition-all"
+          >
+            Elimina ora
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 };
 

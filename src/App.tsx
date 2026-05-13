@@ -11,6 +11,8 @@ import Dashboard from "./pages/Dashboard";
 import NewAnalysis from "./pages/NewAnalysis";
 import AnalysisResult from "./pages/AnalysisResult";
 import Sales from "./pages/Sales";
+import DealChecker from "./pages/DealChecker";
+import FlipCalculator from "./pages/FlipCalculator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +48,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Sales />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/calculator"
+              element={
+                <ProtectedRoute>
+                  <FlipCalculator />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/deal-checker"
+              element={
+                <ProtectedRoute>
+                  <DealChecker />
                 </ProtectedRoute>
               }
             />

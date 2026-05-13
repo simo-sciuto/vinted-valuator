@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Camera, Sparkles, TrendingUp, Tag, ArrowRight } from "lucide-react";
+import { Camera, Tag, TrendingUp, FileText, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/AppHeader";
 import { FlipDiscovery } from "@/components/FlipDiscovery";
@@ -14,17 +14,16 @@ const Landing = () => {
         <section className="container px-6 py-12 md:py-20 relative overflow-hidden">
           <div className="mx-auto max-w-4xl text-center relative z-10">
             <span className="pill bg-accent text-accent-foreground border-2 border-black animate-in fade-in slide-in-from-bottom-4 duration-700 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] transition-all text-[10px] md:text-xs">
-              <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
-              L'alleato dei reseller Vinted
+              <Tag className="h-3 w-3 md:h-4 md:w-4" />
+              Per chi compra e rivende su Vinted
             </span>
             <h1 className="mt-6 md:mt-8 font-display text-4xl sm:text-5xl md:text-8xl font-black uppercase leading-[0.95] md:leading-[0.9] tracking-tighter animate-in fade-in slide-in-from-bottom-6 duration-1000 delay-150">
               Scatta una foto.
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-sun drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] md:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">Facciamo noi il resto.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-sun drop-shadow-[2px_2px_0px_rgba(0,0,0,1)] md:drop-shadow-[4px_4px_0px_rgba(0,0,0,1)]">Scopri il vero valore.</span>
             </h1>
             <p className="mt-6 md:mt-8 text-lg md:text-2xl text-foreground font-medium animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 max-w-2xl mx-auto leading-tight md:leading-normal">
-              Riconosciamo l'oggetto, raccontiamo la storia del brand, lo stimiamo in euro e ti scriviamo l'annuncio Vinted pronto
-              da pubblicare.
+              Foto, brand, storia, stima in euro e annuncio Vinted pronto da pubblicare. Tutto in pochi secondi.
             </p>
 
             <div className="mt-10 md:mt-12 flex flex-col items-stretch sm:items-center justify-center gap-4 sm:flex-row animate-in fade-in slide-in-from-bottom-10 duration-1000 delay-500">
@@ -39,7 +38,7 @@ const Landing = () => {
               </Button>
             </div>
 
-            <p className="mt-8 text-[10px] md:text-sm font-bold uppercase tracking-widest text-muted-foreground animate-in fade-in duration-1000 delay-700">Bastano 30 secondi per la tua prima analisi.</p>
+            <p className="mt-8 text-[10px] md:text-sm font-bold uppercase tracking-widest text-muted-foreground animate-in fade-in duration-1000 delay-700">Nessuna carta richiesta · Risultati in 30 secondi</p>
           </div>
 
           {/* Floating preview cards */}
@@ -48,22 +47,22 @@ const Landing = () => {
               icon={<Camera className="h-6 w-6" />}
               accent="bg-accent border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)] text-black"
               title="Carica le foto"
-              text="Da 1 a 5 immagini, da qualsiasi angolazione."
+              text="Da 1 a 5 immagini. Più angolazioni, stima più precisa."
               delay="delay-[600ms]"
             />
             <PreviewCard
-              icon={<Sparkles className="h-7 w-7" />}
+              icon={<Tag className="h-7 w-7" />}
               accent="bg-pop text-black border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-              title="Analisi Istantanea"
-              text="Brand, artista, epoca, condizione, storia dell'oggetto."
+              title="Stima precisa"
+              text="Brand, epoca, condizione e valore di mercato aggiornato."
               delay="delay-[800ms]"
               featured={true}
             />
             <PreviewCard
               icon={<TrendingUp className="h-7 w-7" />}
               accent="bg-black text-white border-2 border-black shadow-[4px_4px_0px_rgba(0,0,0,1)]"
-              title="Stima e annuncio"
-              text="Prezzo attuale, proiezione futura, annuncio pronto all'uso."
+              title="Pubblica subito"
+              text="Annuncio Vinted già scritto. Copia, incolla, vendi."
               delay="delay-[1000ms]"
             />
           </div>
@@ -75,14 +74,14 @@ const Landing = () => {
         <section className="container py-20 border-t-2 border-black/5">
            <div className="mx-auto max-w-5xl">
              <div className="mb-12 text-center">
-                <span className="pill bg-black text-white text-[10px] font-black uppercase mb-4">Live Discovery</span>
-                <h2 className="font-display text-4xl font-black uppercase md:text-5xl">Affari del Giorno (Market Scout)</h2>
-                <p className="mt-4 text-xl text-muted-foreground font-medium">Scopri cosa stanno trovando i nostri algoritmi in questo momento sui marketplace.</p>
+                <span className="pill bg-black text-white text-[10px] font-black uppercase mb-4">Market Scout</span>
+                <h2 className="font-display text-4xl font-black uppercase md:text-5xl">Gli affari del giorno</h2>
+                <p className="mt-4 text-xl text-muted-foreground font-medium">Oggetti in vendita a prezzi interessanti, selezionati ogni giorno sui principali marketplace.</p>
              </div>
              <FlipDiscovery limit={3} />
              <div className="mt-12 text-center">
                 <Button asChild variant="outline" className="h-12 rounded-full border-2 border-black font-bold uppercase shadow-pop hover:shadow-none hover:translate-y-1 transition-all">
-                  <Link to="/auth?mode=signup">Accedi per sbloccare tutti i deal</Link>
+                  <Link to="/auth?mode=signup">Registrati per vedere tutti gli affari</Link>
                 </Button>
              </div>
            </div>
@@ -92,32 +91,32 @@ const Landing = () => {
         <section className="bg-gradient-to-b from-background to-pop/20 py-32 relative border-y-2 border-black">
           <div className="container relative z-10">
             <div className="mx-auto max-w-3xl text-center animate-in fade-in slide-in-from-bottom-8 duration-1000">
-              <h2 className="font-display text-5xl font-black uppercase md:text-6xl">Tutto quello che ti serve per vendere al top</h2>
+              <h2 className="font-display text-5xl font-black uppercase md:text-6xl">Tutto quello che ti serve per vendere bene</h2>
               <p className="mt-6 text-xl text-foreground font-medium">
-                Dalla foto all'annuncio, in un'unica app dal design mozzafiato pensata per chi fa della rivendita un'arte.
+                Dalla foto all'annuncio pubblicato, senza perdere tempo a cercare prezzi o scrivere descrizioni.
               </p>
             </div>
 
             <div className="mt-20 grid gap-8 md:grid-cols-2 max-w-5xl mx-auto">
               <Feature
-                icon={<Sparkles className="h-6 w-6" />}
-                title="Riconoscimento intelligente"
-                text="Il nostro motore identifica l'oggetto, il brand, l'autore o la band, l'epoca e la condizione. Ti fornisce anche i dettagli storici che fanno innamorare i compratori."
+                icon={<Tag className="h-6 w-6" />}
+                title="Scheda prodotto completa"
+                text="Brand, autore, epoca e condizione in un colpo solo. Con i dettagli storici che convincono chi guarda il tuo annuncio."
               />
               <Feature
                 icon={<TrendingUp />}
-                title="Stima oggi e domani"
-                text="Prezzo realistico per il mercato europeo (Vinted, eBay, Discogs) e proiezione di valore a 1, 3 e 5 anni."
+                title="Valore di mercato reale"
+                text="Prezzo attuale su Vinted, eBay e Discogs, più una proiezione su quanto potrebbe valere in futuro."
               />
               <Feature
-                icon={<Tag />}
-                title="Annuncio Vinted pronto"
-                text="Titolo SEO, descrizione informale, hashtag ottimizzati, prezzo e categoria. Copia, incolla, pubblica."
+                icon={<FileText />}
+                title="Annuncio già scritto"
+                text="Testo personalizzato, prezzo suggerito e categoria. Copia e pubblica in un click, senza scrivere nulla."
               />
               <Feature
                 icon={<Camera />}
                 title="Storico personale"
-                text="Tutte le tue analisi salvate. Confronta acquisti e vendite, tieni traccia di quanto guadagni davvero."
+                text="Tutte le tue stime salvate. Confronta acquisti e vendite, tieni traccia di quanto guadagni davvero."
               />
             </div>
           </div>
@@ -144,7 +143,7 @@ const Landing = () => {
       </main>
 
       <footer className="border-t border-border/60 py-8 text-center text-sm text-muted-foreground">
-        ReVinted · Fatto con ❤️ per chi rivende
+        STIMA · Fatto con ❤️ per chi rivende
       </footer>
     </div>
   );

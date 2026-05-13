@@ -29,6 +29,8 @@ export interface AnalysisResult {
     authenticityClues: string;
     restorationTips: string;
     stylingAdvice: string;
+    negotiationScript?: string;
+    listingKeywords?: string[];
   };
   historicalContext: {
     brandHistory: string;
@@ -70,6 +72,25 @@ export interface AnalysisResult {
     soldPrice?: number;
     actualProfit?: number;
   };
+  saleSuccessProbability?: {
+    score: number;
+    label: "molto alta" | "alta" | "media" | "bassa" | "molto bassa";
+    timeToSell: number;
+    factors: string[];
+  };
+  platformPrices?: {
+    vinted: number;
+    ebay: number;
+    depop: number;
+    bestPlatform: string;
+    reasoning: string;
+  };
+  bestPostingTime?: {
+    days: string[];
+    timeSlot: string;
+    reasoning: string;
+    tip: string;
+  };
 }
 
 export interface MultiPlatformListing {
@@ -81,6 +102,51 @@ export interface MultiPlatformListing {
   suggestedPrice: number;
   vintedCategory: string;
   sellingTip: string;
+}
+
+export interface DealListingPreview {
+  title: string;
+  price: number;
+  imageUrl: string;
+  brand: string;
+  condition: string;
+  url: string;
+}
+
+export interface DealCheckResponse {
+  listing: DealListingPreview;
+  result: DealCheckResult;
+}
+
+export interface DealCheckResult {
+  negotiationScript?: string;
+  item: {
+    name: string;
+    brand: string;
+    category: string;
+    condition: string;
+    estimatedYear: string;
+  };
+  market: {
+    estimatedMin: number;
+    estimatedMax: number;
+    askingPrice: number;
+    dealScore: number;
+    verdict: "ottimo affare" | "buon affare" | "prezzo equo" | "sopravvalutato" | "da evitare";
+    savingsAmount: number;
+    savingsPercent: number;
+    reasoning: string;
+    buyRecommendation: boolean;
+    sellingTip: string;
+    resaleProbability: number;
+  };
+  similarDeals: Array<{
+    name: string;
+    platform: string;
+    priceRange: string;
+    link: string;
+    whyInteresting: string;
+  }>;
 }
 
 export interface AnalysisRow {
